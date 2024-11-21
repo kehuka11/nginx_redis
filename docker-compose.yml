@@ -1,0 +1,45 @@
+version: "3.9"
+services:
+  redis:
+    image: "redis:7.4.1-alpine3.20"
+    expose:
+      - 6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping", "|", "grep", "PONG"]
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+  memcached:
+    image: "memcached:alpine"
+  mysql:
+    image: mysql:8.0.33
+    container_name: backend-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: Password123
+      MYSQL_DATABASE: library
+      MYSQL_USER: user
+      MYSQL_PASSWORD: Password123
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+  nginx:
+    image: "openresty/openresty:alpine"
+    ports: 
+      - 80:80
+    volumes:
+      - ./nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      redis:
+        condition: service_healthy
+      memcached:
+        condition: service_started
+      mysql:
+        condition: service_started
