@@ -9,26 +9,16 @@ services:
       timeout: 5s
       retries: 5
       start_period: 5s
-  memcached:
-    image: "memcached:alpine"
-  mysql:
-    image: mysql:8.0.33
-    container_name: backend-mysql
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: Password123
-      MYSQL_DATABASE: library
-      MYSQL_USER: user
-      MYSQL_PASSWORD: Password123
-    restart: always
-    command: --default-authentication-plugin=mysql_native_password
 
-  adminer:
-    image: adminer
-    restart: always
+  app1:
+    image: "sample-app1:latest"
     ports:
       - 8080:8080
+  app2:
+    image: "sample-app2:latest"
+    ports:
+      - 8081:8081
+
   nginx:
     image: "openresty/openresty:alpine"
     ports: 
@@ -39,7 +29,3 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-      memcached:
-        condition: service_started
-      mysql:
-        condition: service_started
